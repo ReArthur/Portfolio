@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Socialize - Rede Social de Projetos Sociais</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+<body onload="inicializarApp()">
+
+    <!-- Cabeçalho -->
+    <header>
+        <nav>
+            <div class="logo">
+                <h1>Socialize &#128526;</h1>
+            </div>
+            <ul class="nav-links">
+                <li><a type="button" onclick="showForm('home')">Início</a></li>
+                <li><a type="button" onclick="showForm('proj')">Projetos</a></li>
+                <li><a type="button" onclick="showForm('conta')">Conta</a></li>
+            </ul>
+            <button id="toggle-dark-mode" title="Alternar tema">🌙 Modo Escuro</button>
+        </nav>
+    </header>
+
+    <!-- Botão flutuante para criar postagem -->
+    <button id="btn-nova-postagem" title="Nova postagem" aria-label="Criar nova postagem">+</button>
+
+    <!-- Modal de nova postagem -->
+    <div id="modal-postagem">
+        <div class="modal-conteudo">
+            <form id="form-postagem">
+            <label for="titulo">Título *</label>
+            <input type="text" id="titulo" name="titulo" required>
+
+            <label for="texto">Texto</label>
+            <textarea id="texto" name="texto"></textarea>
+
+            <label for="imagem">Imagem</label>
+            <input type="file" id="upload-imagem" accept="image/*" name="img">
+
+            <label for="link">Link</label>
+            <input type="url" id="link" name="link">
+
+            <div class="botoes-modal">
+                <button type="submit" id="enviar-postagem">Enviar</button>
+                <button type="button" id="fechar-postagem">Fechar</button>
+            </div>
+            </form>
+        </div>
+</div>
+
+
+    <!-- Seção Inicial -->
+    <div id="form-home" class="form-container">
+        <section id="home">
+            <!-- Filtros -->
+            <div class="filtros">
+                <button type="button" onclick="ordenarPor('data')">Mais recente</button>
+                <button type="button" onclick="ordenarPor('likes')">Mais curtidas</button>
+            </div>
+            <!-- Onde as postagens aparecem -->
+            <div id="feed-postagens" style="display: block;"></div>
+            <div class="proj">
+                <h2>Bem-vindo ao Socialize!</h2>
+                <p>Conectando pessoas e projetos sociais para um mundo melhor.</p>
+                <button type="button" onclick="showForm('proj')" class="btn">Conheça os Projetos</button>
+            </div>
+        </section>
+    </div>
+
+    <!-- Seção de Projetos -->
+    <div id="form-proj" class="form-container" style="display:none;">
+        <section id="projetos">
+            <h2>Projetos Sociais em Destaque</h2>
+            <div id="projetos-mais-seguidos"></div>
+        </section>
+    </div>
+
+    <!-- Seção de Contato -->
+    <div id="form-contact" class="form-container" style="display:none;">
+        <section id="contato">
+            <h2>Contato</h2>
+            <form id="formContact" onsubmit="event.preventDefault(); alert('Mensagem enviada!');">
+                <label for="nome">Nome:</label>
+                <input type="text" id="nome" name="nome" required />
+                
+                <label for="email">E-mail:</label>
+                <input type="email" id="email" name="email" required />
+                
+                <label for="mensagem">Mensagem:</label>
+                <textarea id="mensagem" name="mensagem" required></textarea>
+                
+                <button type="submit">Enviar</button>
+            </form>
+        </section>
+    </div>
+
+    <!-- Seção de Conta -->
+    <div id="form-conta" class="form-container" style="display:none;">
+        <section id="conta">
+            <div id="conta-deslogada">
+                <h2>Entrar</h2>
+                <button type="button" onclick="showForm('login')">Login</button>
+                <button type="button" onclick="showForm('cadastro')">Cadastro</button>
+            </div>
+            <div id="conta-logada" style="display: none;">
+                <h2>Conta Logada</h2>
+                <div class="foto-wrapper">
+                    <input type="file" id="upload-foto" accept="image/*" style="display:none;" />
+                    <img
+                        id="user-foto"
+                        src="images/placeholder-perfil.jpeg"
+                        alt="Foto do usuário"
+                        style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; cursor: pointer; margin-top: 10px;"
+                        tabindex="0"
+                        aria-label="Alterar foto do perfil"
+                    />
+                </div>
+                <p id="user-nome"></p>
+                <p id="user-tipo"></p>
+                <p id="user-objetivo" style="display:none;"></p>
+                <p>Seguidores: <span id="user-seguidores"></span></p>
+                <button type="button" onclick="logout()">Sair</button>
+            </div>
+        </section>
+    </div>
+
+    <!-- Login -->
+    <div id="form-login" class="form-container" style="display:none;">
+        <section id="login">
+            <h2>Login</h2>
+            <p>Selecione o tipo de conta:</p>
+            <button type="button" onclick="showLoginForm('voluntario')">Entrar como Voluntário</button>
+            <button type="button" onclick="showLoginForm('projeto')">Entrar como Projeto Social</button>
+        </section>
+
+        <div id="login-voluntario" class="login-container" style="display:none;">
+            <form id="loginVoluntario" onsubmit="loginVoluntario(event)">
+                <section>
+                    <h3>Login de Voluntário</h3>
+                    <label for="login-email-voluntario">E-mail:</label>
+                    <input type="email" id="login-email-voluntario" required />
+                    <label for="login-senha-voluntario">Senha:</label>
+                    <input type="password" id="login-senha-voluntario" required />
+                    <button type="submit">Entrar</button>
+                </section>
+            </form>
+        </div>
+
+        <div id="login-projeto" class="login-container" style="display:none;">
+            <form id="loginProjeto" onsubmit="loginProjeto(event)">
+                <section>
+                    <h3>Login de Projeto Social</h3>
+                    <label for="login-email-projeto">E-mail:</label>
+                    <input type="email" id="login-email-projeto" required />
+                    <label for="login-senha-projeto">Senha:</label>
+                    <input type="password" id="login-senha-projeto" required />
+                    <button type="submit">Entrar</button>
+                </section>
+            </form>
+        </div>
+    </div>
+
+    <!-- Cadastro -->
+    <div id="form-cadastro" class="form-container" style="display:none;">
+        <section id="cadastro">
+            <h2>Cadastro</h2>
+            <p>Selecione o tipo de conta:</p>
+            <button type="button" onclick="showSignForm('voluntario')">Cadastrar como Voluntário</button>
+            <button type="button" onclick="showSignForm('projeto')">Cadastrar como Projeto Social</button>
+        </section>
+
+        <div id="cadastro-voluntario" class="sign-container" style="display:none;">
+            <form id="cadastroVoluntario" onsubmit="cadastroVoluntario(event)">
+                <section>
+                    <h3>Cadastro de Voluntário</h3>
+                    <label for="cad-nome-voluntario">Nome:</label>
+                    <input type="text" id="cad-nome-voluntario" required />
+                    <label for="cad-email-voluntario">E-mail:</label>
+                    <input type="email" id="cad-email-voluntario" required />
+                    <label for="cad-senha-voluntario">Senha:</label>
+                    <input type="password" id="cad-senha-voluntario" required />
+                    <button type="submit">Cadastrar</button>
+                </section>
+            </form>
+        </div>
+
+        <div id="cadastro-projeto" class="sign-container" style="display:none;">
+            <form id="cadastroProjeto" onsubmit="cadastroProjeto(event)">
+                <section>
+                    <h3>Cadastro de Projeto Social</h3>
+                    <label for="cad-nome-projeto">Nome:</label>
+                    <input type="text" id="cad-nome-projeto" required />
+                    <label for="cad-tipo-projeto">Objetivo principal (ODS):</label>
+                    <select id="cad-tipo-projeto" required>
+                        <option value="" disabled selected>Selecione um Objetivo Principal</option>
+                        <option value="erradicar-pobreza">Erradicação da Pobreza</option>
+                        <option value="fome-zero">Fome Zero</option>
+                        <option value="bem-estar">Saúde e Bem-estar</option>
+                        <option value="educacao">Educação de Qualidade</option>
+                        <option value="igualdade-genero">Igualdade de Gênero</option>
+                        <option value="agua-saneamento">Água limpa e Saneamento</option>
+                        <option value="energia-acessivel">Energia Acessível e Limpa</option>
+                        <option value="emprego-economia">Emprego digno e Crescimento Econômico</option>
+                        <option value="inovacao-infraestrutura">Indústria, Inovação e Infraestrutura</option>
+                        <option value="reduzir-desigualdade">Redução da Desigualdade</option>
+                        <option value="sustentavel">Cidades e Comunidades Sustentáveis</option>
+                        <option value="consumo-responsavel">Consumo e Produção Responsáveis</option>
+                        <option value="mudanca-climatica">Combate às Mudanças Climáticas</option>
+                        <option value="vida-aquatica">Vida Aquática</option>
+                        <option value="vida-terrestre">Vida Terrestre</option>
+                        <option value="paz-justica">Paz, Justiça e Instituições Eficazes</option>
+                        <option value="parcerias">Parcerias e Meios de Implementação</option>
+                    </select>
+                    <label for="cad-email-projeto">E-mail:</label>
+                    <input type="email" id="cad-email-projeto" required />
+                    <label for="cad-senha-projeto">Senha:</label>
+                    <input type="password" id="cad-senha-projeto" required />
+                    <button type="submit">Cadastrar</button>
+                </section>
+            </form>
+        </div>
+    </div>
+
+    <!-- Seção de Perfil de Outro Usuário -->
+    <div id="perfil-externo" class="form-container" style="display:none;">
+        <img id="perfil-foto" src="images/placeholder-perfil.jpeg" alt="Foto do perfil" />
+        <h2 id="perfil-nome"></h2>
+        <p id="perfil-tipo"></p>
+        <p>Seguidores: <span id="perfil-seguidores"></span></p>
+        <button id="btn-seguir">Seguir</button>
+        <button id="btn-unfollow">Deixar de seguir</button>
+    </div>
+
+
+
+    <!-- Rodapé -->
+    <footer>
+        <section id="sobre">
+            <h2>Sobre o Socialize</h2>
+            <p>
+                O Socialize é uma plataforma criada para dar visibilidade aos projetos sociais que impactam positivamente as comunidades.
+            </p>
+        </section>
+        <li><a type="button" onclick="showForm('contact')">Contato</a></li>
+        <p><small>&copy; 2025 Socialize - Todos os direitos reservados.</small></p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
